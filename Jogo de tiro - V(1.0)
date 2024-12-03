@@ -1,0 +1,190 @@
+/Feito através de ideias minhas com auxilio do https://copilot.microsoft.com/chats/CcHqyqq3bzowJ7stEMk6A
+
+import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+      ),
+      debugShowCheckedModeBanner: false,
+      home: MainPage(),
+    );
+  }
+}
+
+class MainPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Jogo de Tiro ao Alvo"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GamePage()),
+                );
+              },
+              child: Text("Iniciar Jogo"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
+              },
+              child: Text("Configurações"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class GamePage extends StatefulWidget {
+  @override
+  _GamePageState createState() => _GamePageState();
+}
+
+class _GamePageState extends State<GamePage> {
+  int score = 0;
+  List<Color> colors = List.generate(10, (index) => Colors.blue);
+  late AudioPlayer audioPlayer;
+
+  @override
+  void initState() {
+    super.initState();
+    audioPlayer = AudioPlayer();
+    playBackgroundMusic();
+  }
+
+  void playBackgroundMusic() async {
+    await audioPlayer.play(
+      'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',  // Use uma URL de uma trilha sonora relaxante
+      isLocal: false,
+    );
+    audioPlayer.setReleaseMode(ReleaseMode.LOOP);  // Loop da música
+  }
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
+  }
+
+  void handleTap(int index) {
+    setState(() {
+      if (colors[index] == Colors.blue) {
+        colors[index] = Colors.red;
+        score++;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Jogo"),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage('https://source.unsplash.com/random/800x600'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Pontos: $score",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  backgroundColor: Colors.black54,
+                ),
+              ),
+              SizedBox(height: 10),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: List.generate(9, (index) {
+                  return GestureDetector(
+                    onTap: () => handleTap(index),
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      color: colors[index],
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsPage extends StatelessWidget {
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Configurações"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Duração do Jogo (minutos)'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return;
+                  }
+                  return null;
+                },
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // Processar os dados do formulário
+                  }
+                },
+                child: Text('Salvar Configurações'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
